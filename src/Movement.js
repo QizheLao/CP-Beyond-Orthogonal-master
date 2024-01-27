@@ -4,7 +4,7 @@ class Movement extends Phaser.Scene {
     }
 
     init() {
-        this.PLAYER_VELOCITY = 5
+        this.PLAYER_VELOCITY = 350
     }
 
     preload() {
@@ -16,35 +16,64 @@ class Movement extends Phaser.Scene {
     create() {
         this.cameras.main.setBackgroundColor(0xDDDDDD)
 
-        this.player = this.add.sprite(width/2, height/2, 'character', 1).setScale(2)
+        // create animations
+        this.anims.create({
+            key: 'idle-down',
+            frameRate: 0,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('character', {
+                start: 1,
+                end: 1
+            })
+        })
+
+        this.anims.create({
+            key: 'walk-down',
+            frameRate: 5,
+            repeat: -1,
+            frames: this.anims.generateFrameNumbers('character', {
+                start: 1,
+                end: 2
+            })
+        })
+
+        this.player = this.physics.add.sprite(width/2, height/2, 'character', 1).setScale(2)
+        this.player.body.setCollideWorldBounds(true)
+        this.player.body.setSize(32, 32).setOffset(8, 16)
         console.log('now in movement scene 👍')
 
         cursors = this.input.keyboard.createCursorKeys()
     }
 
     update() {
-        let playerVector = new Phaser
-        // let(cursors.left.isDown){
-        //     playerVector
-        // }
+        let playerVector = new Phaser.Math.Vector2(0, 0)
+        let playerDirection = 'down'
+
         // handle L/R
         if(cursors.left.isDown){
-            this.player.x -= this.PLAYER_VELOCITY
+            playerVector.x = -1
+            playerDirection = 'left'
         }else if(cursors.right.isDown){
-            this.player.x += this.PLAYER_VELOCITY
+            playerVector.x = 1
+            playerDirection = 'right'
         }
 
         // handle U/D
         if(cursors.up.isDown){
-            this.player.y -= this.PLAYER_VELOCITY
+            playerVector.y = -1
+            playerDirection = 'up'
         }else if(cursors.down.isDown){
-            this.player.y += this.PLAYER_VELOCITY
+            playerVector.y = 1
+            playerDirection = 'down'
         }
 
         playerVector.normalize()
 
         this.player.setVelocity(this.PLAYER_VELOCITY * playerVector.x, this.PLAYER_VELOCITY * playerVector.y)
 
+        let playerMovement
+        playerVector.length() ? playerMovement = 'walk' : playerMovement = 'idle'
+        this.player.play(playerMovement)
         // this.player.x += playerVector.x * this.PLAYER_VELOCITY
         // this.player.y += playerVector.y * this.PLAYER_VELOCITY
 
